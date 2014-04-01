@@ -1,0 +1,47 @@
+# Example 5
+#
+# Single box with LAMP stack and sample static/dynamic sites via Puppet.
+#
+box      = 'precise64'
+url      = 'http://files.vagrantup.com/precise64.box'
+hostname = 'pd'
+domain   = 'example.com'
+ip       = '192.168.1.100'
+ram      = '4096'
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.box = box
+  config.vm.box_url = url
+
+  
+  config.vm.network :public_network, :bridge => 'en0: Ethernet', ip: ip
+
+  #config.vm.network "forwarded_port", guest: 88, host: 80
+  #config.vm.network "forwarded_port", guest: 63333, host: 63333
+
+  config.vm.hostname = hostname
+
+
+  config.vm.synced_folder "~/Dropbox/www", "/var/www/"
+  
+  #config.ssh.pty = true
+
+  config.vm.provider "virtualbox" do |v|
+    v.name = hostname
+    v.memory = ram
+    #v.modifyvm = :id
+  end
+
+  config.vm.provision :puppet do |puppet|
+    puppet.manifests_path = 'puppet/manifests'
+    puppet.manifest_file = 'site.pp'
+    puppet.module_path = 'puppet/modules'
+    puppet.facter = {
+      "ip"  =>  ip
+    }
+  end
+end
+
